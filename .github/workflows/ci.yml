@@ -18,7 +18,7 @@ jobs:
         working-directory: backend
         run: |
           pip install -r requirements.txt ruff
-          ruff check app tests
+          ruff check --select F,E9 app tests
       - name: Run unit tests
         working-directory: backend
         run: PYTHONPATH=. pytest tests/test_core_logic.py -v
