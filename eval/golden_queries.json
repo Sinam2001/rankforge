@@ -1,0 +1,47 @@
+[
+  {
+    "query": "atta",
+    "relevant_skus": {
+      "GROC-ATTA-01": 3,
+      "GROC-ATTA-02": 3
+    }
+  },
+  {
+    "query": "samung",
+    "relevant_skus": {
+      "ELEC-PHN-02": 3
+    }
+  },
+  {
+    "query": "ifone",
+    "relevant_skus": {
+      "ELEC-PHN-01": 3
+    }
+  },
+  {
+    "query": "quiet keyboard for office",
+    "relevant_skus": {
+      "ELEC-KBD-01": 3,
+      "ELEC-KBD-02": 3
+    }
+  },
+  {
+    "query": "chappal",
+    "relevant_skus": {
+      "FOOT-SLP-01": 3
+    }
+  },
+  {
+    "query": "anc headphones for travel",
+    "relevant_skus": {
+      "ELEC-AUD-01": 3,
+      "ELEC-AUD-02": 2
+    }
+  },
+  {
+    "query": "mixie for chutney",
+    "relevant_skus": {
+      "HOME-MIX-01": 3
+    }
+  }
+]

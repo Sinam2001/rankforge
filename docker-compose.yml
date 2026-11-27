@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: rankforge-postgres
+    environment:
+      POSTGRES_USER: rankforge
+      POSTGRES_PASSWORD: rankforge_dev_password
+      POSTGRES_DB: rankforge
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/app/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rankforge -d rankforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: rankforge-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.4
+    container_name: rankforge-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./backend
+    container_name: rankforge-api
+    environment:
+      DATABASE_URL: postgresql://rankforge:rankforge_dev_password@postgres:5432/rankforge
+      REDIS_URL: redis://redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+
+  indexer:
+    build: ./backend
+    container_name: rankforge-indexer
+    command: ["python", "-m", "app.workers.indexer"]
+    environment:
+      DATABASE_URL: postgresql://rankforge:rankforge_dev_password@postgres:5432/rankforge
+      REDIS_URL: redis://redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: rankforge-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
