@@ -3,9 +3,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.db.pool import vector_to_pg_literal
-from app.services.cache_service import make_cache_key
-from eval.evaluate_ndcg import mrr, ndcg_at_k
+from app.db.pool import vector_to_pg_literal  # noqa: E402
+from app.services.cache_service import make_cache_key  # noqa: E402
+from eval.evaluate_ndcg import mrr, ndcg_at_k  # noqa: E402
 
 
 def test_vector_literal_formatting():
